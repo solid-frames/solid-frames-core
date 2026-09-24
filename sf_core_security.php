@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Solid Frames Core
  * Description: Globale Sicherheits- und Performance-Standards (MU-Plugin).
- * Version: 1.0.7
+ * Version: 1.0.8
  * Author: Solid Frames
  */
 
@@ -54,34 +54,49 @@ add_filter( 'rest_endpoints', function( $endpoints ) {
 	return $endpoints;
 });
 
+// Priorität 1: muss vor Cores redirect_canonical (Prio 10) laufen, sonst steht
+// der Nicename schon im Location-Header von dessen /?author=1-Redirect.
 add_action( 'template_redirect', function() {
 	if ( is_author() ) {
-		wp_redirect( home_url(), 301 );
+		wp_safe_redirect( home_url( '/' ), 301 );
 		exit;
 	}
+}, 1 );
+
+add_filter( 'oembed_response_data', function( $data ) {
+	unset( $data['author_name'], $data['author_url'] );
+	return $data;
 } );
+
+add_filter( 'wp_sitemaps_add_provider', function( $provider, $name ) {
+	return 'users' === $name ? false : $provider;
+}, 10, 2 );
 
 add_filter( 'wp_is_application_passwords_available', '__return_false' );
 
-// Login-Fehler generalisieren (Nur beim echten Login-Vorgang)
-add_filter( 'login_errors', function( $error ) {
-	if ( ! isset( $_GET['action'] ) || $_GET['action'] === 'login' ) {
-		return '<strong>FEHLER</strong>: Die Eingaben sind nicht korrekt.';
+// Zugangsdaten-Fehler vereinheitlichen (Login, WooCommerce, XML-RPC – alles was
+// wp_authenticate() nutzt). Andere Meldungen (Passwort-Richtlinie, Cookies) bleiben sichtbar.
+add_filter( 'authenticate', function( $user ) {
+	if ( is_wp_error( $user ) && array_intersect( $user->get_error_codes(), [ 'invalid_username', 'invalid_email', 'incorrect_password' ] ) ) {
+		return new WP_Error( 'sf_invalid_login', '<strong>FEHLER</strong>: Die Eingaben sind nicht korrekt.' );
 	}
-	return $error;
-} );
+	return $user;
+}, 100 );
 
 // ==============================================================================
 // PASSWORT-RESET ABSICHERN (Ihre Lösung)
 // ==============================================================================
 
-// 1. Umleitung bei Fehlern (Erfolgreiche Resets leiten schon vorher um)
-add_action( 'lost_password', function() {
-	if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-		wp_redirect( wp_login_url() . '?checkemail=confirm' );
+// 1. Umleitung bei Fehlern (Erfolgreiche Resets leiten schon vorher um).
+// $user_data (seit WP 5.4) zeigt zuverlässig, ob der Nutzer gefunden wurde -
+// Core setzt bei unbekanntem Benutzernamen den Code 'invalidcombo', nicht
+// 'invalid_username', daher genügt eine Prüfung auf $user_data.
+add_action( 'lostpassword_post', function( $errors, $user_data ) {
+	if ( ! $user_data && ! in_array( 'empty_username', $errors->get_error_codes(), true ) ) {
+		wp_safe_redirect( add_query_arg( 'checkemail', 'confirm', wp_login_url() ) );
 		exit;
 	}
-} );
+}, 10, 2 );
 
 // 2. Standard-Nachricht auf der Bestätigungsseite überschreiben
 add_filter( 'login_message', function( $message ) {
@@ -94,14 +109,16 @@ add_filter( 'login_message', function( $message ) {
 
 // ==============================================================================
 
-function sf_enforce_password_security( $errors, $user ) {
-	$password = ( isset( $_POST['pass1'] ) && trim( $_POST['pass1'] ) ) ? $_POST['pass1'] : null;
+// $update: user_profile_update_errors uebergibt hier ein bool (Update ja/nein),
+// validate_password_reset uebergibt stattdessen $user - beides ungenutzt.
+function sf_enforce_password_security( $errors, $update ) {
+	$password = ( isset( $_POST['pass1'] ) && trim( wp_unslash( $_POST['pass1'] ) ) ) ? trim( wp_unslash( $_POST['pass1'] ) ) : null;
 
 	if ( ! $password ) {
 		return $errors;
 	}
 
-	if ( strlen( $password ) < 12 ) {
+	if ( mb_strlen( $password ) < 12 ) {
 		$errors->add( 'pass', '<strong>FEHLER</strong>: Das Passwort muss mindestens 12 Zeichen lang sein.' );
 	}
 	if ( ! preg_match( "/[a-z]/", $password ) || ! preg_match( "/[A-Z]/", $password ) ) {
