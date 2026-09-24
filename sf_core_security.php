@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Solid Frames Core
  * Description: Globale Sicherheits- und Performance-Standards (MU-Plugin).
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Solid Frames
  */
 
@@ -16,9 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 add_filter( 'upload_mimes', function( $mimes ) {
 	$mimes['vcf'] = 'text/vcard';
-	if ( current_user_can( 'manage_options' ) ) {
-		$mimes['svg'] = 'image/svg+xml';
-	}
 	return $mimes;
 } );
 
@@ -109,29 +106,33 @@ add_filter( 'login_message', function( $message ) {
 
 // ==============================================================================
 
+// NIST 800-63B: Laenge schlaegt erzwungene Komplexitaet, daher nur Mindestlaenge pruefen.
+function sf_password_too_short( $password ) {
+	return mb_strlen( $password ) < 14;
+}
+
 // $update: user_profile_update_errors uebergibt hier ein bool (Update ja/nein),
 // validate_password_reset uebergibt stattdessen $user - beides ungenutzt.
 function sf_enforce_password_security( $errors, $update ) {
 	$password = ( isset( $_POST['pass1'] ) && trim( wp_unslash( $_POST['pass1'] ) ) ) ? trim( wp_unslash( $_POST['pass1'] ) ) : null;
 
-	if ( ! $password ) {
-		return $errors;
-	}
-
-	if ( mb_strlen( $password ) < 12 ) {
-		$errors->add( 'pass', '<strong>FEHLER</strong>: Das Passwort muss mindestens 12 Zeichen lang sein.' );
-	}
-	if ( ! preg_match( "/[a-z]/", $password ) || ! preg_match( "/[A-Z]/", $password ) ) {
-		$errors->add( 'pass', '<strong>FEHLER</strong>: Das Passwort muss Groß- und Kleinbuchstaben enthalten.' );
-	}
-	if ( ! preg_match( "/[0-9]/", $password ) ) {
-		$errors->add( 'pass', '<strong>FEHLER</strong>: Das Passwort muss mindestens eine Zahl enthalten.' );
+	if ( $password && sf_password_too_short( $password ) ) {
+		$errors->add( 'pass', '<strong>FEHLER</strong>: Das Passwort muss mindestens 14 Zeichen lang sein.' );
 	}
 
 	return $errors;
 }
 add_action( 'user_profile_update_errors', 'sf_enforce_password_security', 10, 2 );
 add_action( 'validate_password_reset', 'sf_enforce_password_security', 10, 2 );
+
+// Gleiche Regel auch bei Passwortaenderung ueber die REST-API (/wp/v2/users/...) durchsetzen.
+add_filter( 'rest_pre_insert_user', function( $prepared_user, $request ) {
+	$password = $request->get_param( 'password' );
+	if ( $password && sf_password_too_short( $password ) ) {
+		return new WP_Error( 'sf_rest_password_policy', 'Das Passwort muss mindestens 14 Zeichen lang sein.', [ 'status' => 400 ] );
+	}
+	return $prepared_user;
+}, 10, 2 );
 
 
 // ==============================================================================
