@@ -8,7 +8,7 @@
 
 # Solid Frames Core
 
-![Version](https://img.shields.io/badge/version-1.0.9-blue)
+![Version](https://img.shields.io/badge/version-1.0.10-blue)
 ![Type](https://img.shields.io/badge/type-MU--Plugin-informational)
 ![PHP](https://img.shields.io/badge/PHP-%3E%3D7.4-777bb4)
 ![WordPress](https://img.shields.io/badge/WordPress-%3E%3D5.5-21759b)
@@ -62,7 +62,7 @@ MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bere
 | `X-Pingback`-Header | Wird aus der Response entfernt. |
 | REST-API-Nutzerliste | Blockiert `/wp/v2/users` für nicht angemeldete Nutzer. |
 | Autor-Enumeration | Leitet Autoren-Archivseiten (`is_author()`) mit Priorität vor Cores `redirect_canonical` auf die Startseite um, entfernt Autor-Daten aus oEmbed-Antworten und deaktiviert den User-Sitemap-Provider. |
-| Application Passwords | Deaktiviert. |
+| Application Passwords | Standardmäßig deaktiviert. Pro Projekt freischaltbar über `define( 'SF_ALLOW_APP_PASSWORDS', true );` in der `wp-config.php` (z. B. für den Bricks-Builder-MCP). Nur bei Bedarf aktivieren und einen eigenen Benutzer mit minimaler Rolle verwenden. |
 | Login-Fehlermeldungen | Vereinheitlicht über einen `authenticate`-Filter auf eine neutrale Meldung, damit keine Rückschlüsse auf gültige Benutzernamen möglich sind. Andere Meldungen (z. B. Passwort-Richtlinie) bleiben sichtbar. |
 | Passwort-Reset-Absicherung | Verrät über `lostpassword_post` nicht, ob ein Benutzername/E-Mail existiert; einheitliche Bestätigungsmeldung unabhängig vom Ergebnis. |
 | Passwort-Richtlinie | Erzwingt mindestens 14 Zeichen (NIST 800-63B: Länge statt erzwungener Komplexität) bei Profiländerungen, Passwort-Resets und Änderungen über die REST-API. |
@@ -79,6 +79,7 @@ MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bere
 
 | Version | Änderungen |
 | --- | --- |
+| 1.0.10 | Application Passwords per Konstante `SF_ALLOW_APP_PASSWORDS` projektweise freischaltbar (Standard bleibt deaktiviert). |
 | 1.0.9 | Passwort-Richtlinie auf reine Längenprüfung (14 Zeichen) vereinfacht, REST-API-Passwortänderungen abgesichert, SVG-Upload-Freischaltung entfernt (wird von Bricks Builder gesteuert). |
 | 1.0.8 | Autor-Enumeration über Hook-Priorität, oEmbed- und Sitemap-Filter geschlossen; Login-Fehler über `authenticate`-Filter vereinheitlicht; Passwort-Reset-Enumeration über `lostpassword_post` geschlossen; Passwort-Längenprüfung korrigiert (`mb_strlen` statt `strlen`). |
 | 1.0.7 | Ausgangsstand. |

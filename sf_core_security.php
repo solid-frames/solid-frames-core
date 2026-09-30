@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Solid Frames Core
  * Description: Globale Sicherheits- und Performance-Standards (MU-Plugin).
- * Version: 1.0.9
+ * Version: 1.0.10
  * Author: Solid Frames
  */
 
@@ -69,7 +69,11 @@ add_filter( 'wp_sitemaps_add_provider', function( $provider, $name ) {
 	return 'users' === $name ? false : $provider;
 }, 10, 2 );
 
-add_filter( 'wp_is_application_passwords_available', '__return_false' );
+// Standardmaessig aus; pro Projekt per SF_ALLOW_APP_PASSWORDS in der wp-config.php
+// freischaltbar (z. B. fuer den Bricks-Builder-MCP).
+if ( ! defined( 'SF_ALLOW_APP_PASSWORDS' ) || ! SF_ALLOW_APP_PASSWORDS ) {
+	add_filter( 'wp_is_application_passwords_available', '__return_false' );
+}
 
 // Zugangsdaten-Fehler vereinheitlichen (Login, WooCommerce, XML-RPC – alles was
 // wp_authenticate() nutzt). Andere Meldungen (Passwort-Richtlinie, Cookies) bleiben sichtbar.
