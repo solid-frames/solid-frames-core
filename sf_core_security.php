@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Solid Frames Core
  * Description: Globale Sicherheits- und Performance-Standards (MU-Plugin).
- * Version: 1.0.10
+ * Version: 1.0.11
  * Author: Solid Frames
  */
 
@@ -85,7 +85,7 @@ add_filter( 'authenticate', function( $user ) {
 }, 100 );
 
 // ==============================================================================
-// PASSWORT-RESET ABSICHERN (Ihre Lösung)
+// PASSWORT-RESET ABSICHERN
 // ==============================================================================
 
 // 1. Umleitung bei Fehlern (Erfolgreiche Resets leiten schon vorher um).
