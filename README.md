@@ -45,15 +45,10 @@ MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bere
 ```bash
 mkdir -p wp-content/mu-plugins
 curl -fsSL -o wp-content/mu-plugins/sf_core_security.php \
-  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
+  https://raw.githubusercontent.com/solid-frames/solid-frames-core/main/sf_core_security.php
 ```
 
-Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Ist das Repository privat, wird ein Token benötigt:
-
-```bash
-curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -o wp-content/mu-plugins/sf_core_security.php \
-  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
-```
+Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Das Repository ist öffentlich, ein Token ist nicht nötig.
 
 Installierte Version prüfen:
 
