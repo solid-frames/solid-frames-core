@@ -52,17 +52,14 @@ Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts stat
 
 #### Mehrere Seiten auf einmal
 
-Für mehrere Installationen auf einem Server liegt das Skript `deploy-core.sh` im Repository. Es lädt die gewünschte Version, prüft sie mit `php -l`, zeigt pro Seite den Diff zur vorhandenen Datei und schreibt sie bei `--apply` mit dem Besitzer der Installation. Unveränderte Seiten werden übersprungen. Es legt keine Sicherungskopien an.
+Für mehrere Installationen auf einem Server liegt das Skript `deploy-core.sh` im Repository. Es findet die Installationen selbst, lädt die gewünschte Version, prüft sie mit `php -l`, zeigt pro Seite den Diff zur vorhandenen Datei und schreibt sie bei `--apply` mit dem Besitzer der Installation. Unveränderte Seiten werden übersprungen. Es legt keine Sicherungskopien an.
 
 ```bash
-# Liste der WordPress-Installationen erzeugen (außerhalb der Webroots ablegen)
-ls -d /home/*/htdocs/*/wp-config.php | sed 's|/wp-config.php||' > /root/sites.txt
-
 ./deploy-core.sh main            # Vorschau, ändert nichts
 ./deploy-core.sh main --apply    # ausrollen
 ```
 
-Ein Beispiel für die Liste steht in `sites.txt.example`. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit angeben.
+Die Installationen werden bei jedem Lauf automatisch unter `/home/*/htdocs/*/wp-config.php` gefunden, es wird keine Liste gespeichert. Ein anderes Muster lässt sich mit `SITE_GLOB='/pfad/*/wp-config.php'` angeben. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit angeben.
 
 Installierte Version prüfen:
 
