@@ -45,15 +45,21 @@ MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bere
 ```bash
 mkdir -p wp-content/mu-plugins
 curl -fsSL -o wp-content/mu-plugins/sf_core_security.php \
-  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
+  https://raw.githubusercontent.com/solid-frames/solid-frames-core/main/sf_core_security.php
 ```
 
-Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Ist das Repository privat, wird ein Token benötigt:
+Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Das Repository ist öffentlich, ein Token ist nicht nötig.
+
+#### Mehrere Seiten auf einmal
+
+Für mehrere Installationen auf einem Server liegt das Skript `deploy-core.sh` im Repository. Es findet die Installationen selbst, lädt die gewünschte Version, prüft sie mit `php -l`, zeigt pro Seite den Diff zur vorhandenen Datei und schreibt sie bei `--apply` mit dem Besitzer der Installation. Unveränderte Seiten werden übersprungen. Es legt keine Sicherungskopien an.
 
 ```bash
-curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -o wp-content/mu-plugins/sf_core_security.php \
-  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
+./deploy-core.sh main            # Vorschau, ändert nichts
+./deploy-core.sh main --apply    # ausrollen
 ```
+
+Die Installationen werden bei jedem Lauf automatisch unter `/home/*/htdocs/*/wp-config.php` gefunden, es wird keine Liste gespeichert. Ein anderes Muster lässt sich mit `SITE_GLOB='/pfad/*/wp-config.php'` angeben. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit angeben.
 
 Installierte Version prüfen:
 
