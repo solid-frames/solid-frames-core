@@ -50,6 +50,20 @@ curl -fsSL -o wp-content/mu-plugins/sf_core_security.php \
 
 Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Das Repository ist öffentlich, ein Token ist nicht nötig.
 
+#### Mehrere Seiten auf einmal
+
+Für mehrere Installationen auf einem Server liegt das Skript `deploy-core.sh` im Repository. Es lädt die gewünschte Version, prüft sie mit `php -l`, zeigt pro Seite den Diff zur vorhandenen Datei und schreibt sie bei `--apply` mit dem Besitzer der Installation. Unveränderte Seiten werden übersprungen. Es legt keine Sicherungskopien an.
+
+```bash
+# Liste der WordPress-Installationen erzeugen (außerhalb der Webroots ablegen)
+ls -d /home/*/htdocs/*/wp-config.php | sed 's|/wp-config.php||' > /root/sites.txt
+
+./deploy-core.sh main            # Vorschau, ändert nichts
+./deploy-core.sh main --apply    # ausrollen
+```
+
+Ein Beispiel für die Liste steht in `sites.txt.example`. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit angeben.
+
 Installierte Version prüfen:
 
 ```bash
