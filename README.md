@@ -8,7 +8,7 @@
 
 # Solid Frames Core
 
-![Version](https://img.shields.io/badge/version-1.0.10-blue)
+![Version](https://img.shields.io/badge/version-1.0.11-blue)
 ![Type](https://img.shields.io/badge/type-MU--Plugin-informational)
 ![PHP](https://img.shields.io/badge/PHP-%3E%3D7.4-777bb4)
 ![WordPress](https://img.shields.io/badge/WordPress-%3E%3D5.5-21759b)
@@ -18,6 +18,7 @@ WordPress MU-Plugin (Must-Use) mit globalen Sicherheits- und Performance-Standar
 ## Inhaltsverzeichnis
 
 - [Installation](#installation)
+  - [Ausrollen und Aktualisieren per WP-CLI / Shell](#ausrollen-und-aktualisieren-per-wp-cli--shell)
 - [Anforderungen](#anforderungen)
 - [Funktionen](#funktionen)
   - [Funktionalität & Workflow](#funktionalität--workflow)
@@ -36,6 +37,32 @@ wp-content/
 ```
 
 MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bereich ist nicht nötig oder möglich.
+
+### Ausrollen und Aktualisieren per WP-CLI / Shell
+
+`wp plugin install` kann MU-Plugins nicht installieren (es legt Plugins in `wp-content/plugins/` ab, nicht in `mu-plugins/`). Stattdessen wird die Datei direkt von GitHub geladen. Im WordPress-Verzeichnis:
+
+```bash
+mkdir -p wp-content/mu-plugins
+curl -fsSL -o wp-content/mu-plugins/sf_core_security.php \
+  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
+```
+
+Ein Update funktioniert mit demselben Befehl. Für reproduzierbare Rollouts statt `main` einen Tag oder Commit-Hash in der URL verwenden. Ist das Repository privat, wird ein Token benötigt:
+
+```bash
+curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -o wp-content/mu-plugins/sf_core_security.php \
+  https://raw.githubusercontent.com/nexaar/solid-frames-core/main/sf_core_security.php
+```
+
+Installierte Version prüfen:
+
+```bash
+grep -m1 'Version:' wp-content/mu-plugins/sf_core_security.php
+wp plugin list --status=must-use
+```
+
+Es gibt keine automatischen Updates, das Plugin wird nur beim Ausrollen aktualisiert.
 
 ## Anforderungen
 
@@ -79,6 +106,7 @@ MU-Plugins werden automatisch aktiviert, ein manuelles Aktivieren im Plugin-Bere
 
 | Version | Änderungen |
 | --- | --- |
+| 1.0.11 | Deployment-Anleitung (Shell/WP-CLI) in der README ergänzt, Code-Kommentar bereinigt. |
 | 1.0.10 | Application Passwords per Konstante `SF_ALLOW_APP_PASSWORDS` projektweise freischaltbar (Standard bleibt deaktiviert). |
 | 1.0.9 | Passwort-Richtlinie auf reine Längenprüfung (14 Zeichen) vereinfacht, REST-API-Passwortänderungen abgesichert, SVG-Upload-Freischaltung entfernt (wird von Bricks Builder gesteuert). |
 | 1.0.8 | Autor-Enumeration über Hook-Priorität, oEmbed- und Sitemap-Filter geschlossen; Login-Fehler über `authenticate`-Filter vereinheitlicht; Passwort-Reset-Enumeration über `lostpassword_post` geschlossen; Passwort-Längenprüfung korrigiert (`mb_strlen` statt `strlen`). |
